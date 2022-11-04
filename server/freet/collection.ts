@@ -17,15 +17,21 @@ class FreetCollection {
    *
    * @param {string} authorId - The id of the author of the freet
    * @param {string} content - The id of the content of the freet
+   * @param {boolean} fact - True if fact, false if opinion
    * @return {Promise<HydratedDocument<Freet>>} - The newly created freet
    */
-  static async addOne(authorId: Types.ObjectId | string, content: string): Promise<HydratedDocument<Freet>> {
+  static async addOne(authorId: Types.ObjectId | string, content: string, fact: boolean): Promise<HydratedDocument<Freet>> {
     const date = new Date();
+    const endorsements = new Array;
+    const denouncements = new Array;
     const freet = new FreetModel({
       authorId,
       dateCreated: date,
       content,
-      dateModified: date
+      dateModified: date,
+      endorsements,
+      denouncements,
+      fact
     });
     await freet.save(); // Saves freet to MongoDB
     return freet.populate('authorId');
@@ -76,6 +82,72 @@ class FreetCollection {
     await freet.save();
     return freet.populate('authorId');
   }
+
+  /**
+   * Update a freet with an endorsement
+   * 
+   * @param {string} freetId - The id of the freet to be updated
+   * @param {string} userId - The id of the user endorsing the freet
+   * @return {Promise<HydratedDocument<Freet>>} - The newly updated freet
+   */
+  static async addOneEndorsement(freetId: Types.ObjectId | string, userId: Types.ObjectId | string): Promise<HydratedDocument<Freet>> {
+    const user = await UserCollection.findOneByUserId(userId as string);
+    const freet = await FreetModel.findOne({_id: freetId});
+    freet.endorsements.push(user.username);
+    await freet.save();
+    return freet;
+  }
+
+  /**
+   * Delete an endorsement from a freet
+   * 
+   * @param {string} freetId - The id of the freet to be updated
+   * @param {string} userId - The id of the user unendorsing the freet
+   * @return {Promise<HydratedDocument<Freet>>} - The newly updated freet
+   */
+     static async deleteOneEndorsement(freetId: Types.ObjectId | string, userId: Types.ObjectId | string): Promise<HydratedDocument<Freet>> {
+      const user = await UserCollection.findOneByUserId(userId as string);
+      const freet = await FreetModel.findOne({_id: freetId});
+      const index = freet.endorsements.indexOf(user.username, 0); // adapted from: https://stackoverflow.com/questions/15292278/how-do-i-remove-an-array-item-in-typescript
+        if (index > -1) {
+          freet.endorsements.splice(index, 1);
+        }
+      await freet.save();
+      return freet;
+    }
+
+  /**
+   * Update a freet with a denouncement
+   * 
+   * @param {string} freetId - The id of the freet to be updated
+   * @param {string} userId - The id of the user endorsing the freet
+   * @return {Promise<HydratedDocument<Freet>>} - The newly updated freet
+   */
+   static async addOneDenouncement(freetId: Types.ObjectId | string, userId: Types.ObjectId | string): Promise<HydratedDocument<Freet>> {
+    const user = await UserCollection.findOneByUserId(userId as string);
+    const freet = await FreetModel.findOne({_id: freetId});
+    freet.denouncements.push(user.username);
+    await freet.save();
+    return freet;
+  }
+
+  /**
+   * Delete an denouncement from a freet
+   * 
+   * @param {string} freetId - The id of the freet to be updated
+   * @param {string} userId - The id of the user unendorsing the freet
+   * @return {Promise<HydratedDocument<Freet>>} - The newly updated freet
+   */
+     static async deleteOneDenouncement(freetId: Types.ObjectId | string, userId: Types.ObjectId | string): Promise<HydratedDocument<Freet>> {
+      const user = await UserCollection.findOneByUserId(userId as string);
+      const freet = await FreetModel.findOne({_id: freetId});
+      const index = freet.denouncements.indexOf(user.username, 0); // adapted from: https://stackoverflow.com/questions/15292278/how-do-i-remove-an-array-item-in-typescript
+        if (index > -1) {
+          freet.denouncements.splice(index, 1);
+        }
+      await freet.save();
+      return freet;
+    }
 
   /**
    * Delete a freet with given freetId.

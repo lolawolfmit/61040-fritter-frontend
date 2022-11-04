@@ -1,25 +1,24 @@
-<!-- Form for creating freets (block style) -->
+<!-- Form for requesting VSP status (block style) -->
 
 <script>
 import BlockForm from '@/components/common/BlockForm.vue';
 
 export default {
-  name: 'CreateFreetForm',
+  name: 'RequestVSPStatus',
   mixins: [BlockForm],
   data() {
     return {
-      url: '/api/freets',
+      url: '/api/vsprequest',
       method: 'POST',
       hasBody: true,
       fields: [
-        {id: 'content', label: 'Content', value: ''},
-        {id: 'fact', label: 'Fact?', value: ''}
+        {id: 'content', label: 'Why do you want to be a VSP?', value: ''}
       ],
-      title: 'Create a freet',
-      refreshFreets: true,
+      title: 'Request Verified Scientific Professional Status',
       callback: () => {
-        const message = 'Successfully created a freet!';
+        const message = 'Successfully submitted VSP request!';
         this.$set(this.alerts, message, 'success');
+        this.$store.commit('refreshVSPRequests');
         setTimeout(() => this.$delete(this.alerts, message), 3000);
       }
     };

@@ -12,7 +12,10 @@ const store = new Vuex.Store({
     filter: null, // Username to filter shown freets by (null = show all)
     freets: [], // All freets created in the app
     username: null, // Username of the logged in user
-    alerts: {} // global success/error messages encountered during submissions to non-visible forms
+    alerts: {}, // global success/error messages encountered during submissions to non-visible forms
+    vsprequests: [],
+    isVSP: null,
+    VSPs: []
   },
   mutations: {
     alert(state, payload) {
@@ -30,6 +33,13 @@ const store = new Vuex.Store({
        * @param username - new username to set
        */
       state.username = username;
+    },
+    setVSPStatus(state, status) {
+      /**
+       * Update VSP status to the specified status.
+       * @param status the new status
+       */
+      state.isVSP = status;
     },
     updateFilter(state, filter) {
       /**
@@ -52,6 +62,28 @@ const store = new Vuex.Store({
       const url = state.filter ? `/api/users/${state.filter}/freets` : '/api/freets';
       const res = await fetch(url).then(async r => r.json());
       state.freets = res;
+
+      const vspurl = 'api/vsprequest/VSPs';
+      const vspres = await fetch(vspurl).then(async r => r.json());
+      const VSPs = vspres.vspusers;
+      for (let user of VSPs) {
+        state.VSPs.push(user.username);
+      }
+      console.log(state.VSPs);
+    },
+    updateVSPRequests(state, vsprequests) {
+      /**
+       * Update the stored requests to the provided requests
+       * @param vsprequests vsprequests to store
+       */
+      state.vsprequests = vsprequests;
+      console.log(state.vsprequests.length);
+      console.log(state.vsprequests);
+    },
+    async refreshVSPRequests(state) {
+      const url = 'api/vsprequest';
+      const res = await fetch(url).then(async r => r.json());
+      state.vsprequests = res.vsprequests;
     }
   },
   // Store data across page refreshes, only discard on browser close

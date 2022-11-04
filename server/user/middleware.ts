@@ -1,4 +1,5 @@
 import type {Request, Response, NextFunction} from 'express';
+import {Types} from 'mongoose';
 import UserCollection from '../user/collection';
 
 /**
@@ -78,21 +79,120 @@ const isAccountExists = async (req: Request, res: Response, next: NextFunction) 
  * Checks if a username in req.body is already in use
  */
 const isUsernameNotAlreadyInUse = async (req: Request, res: Response, next: NextFunction) => {
-  if (req.body.username !== undefined) { // If username is not being changed, skip this check
-    const user = await UserCollection.findOneByUsername(req.body.username);
+  const user = await UserCollection.findOneByUsername(req.body.username);
 
-    // If the current session user wants to change their username to one which matches
-    // the current one irrespective of the case, we should allow them to do so
-    if (user && (user?._id.toString() !== req.session.userId)) {
+  // If the current session user wants to change their username to one which matches
+  // the current one irrespective of the case, we should allow them to do so
+  if (!user || (user?._id.toString() === req.session.userId)) {
+    next();
+    return;
+  }
+
+  res.status(409).json({
+    error: {
+      username: 'An account with this username already exists.'
+    }
+  });
+};
+
+/**
+ * Checks if a user is already following another user (cannot re-follow)
+ */
+const isUserAlreadyFollowingTargetUser = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.session.userId) {
+    const user = await UserCollection.findOneByUserId(req.session.userId);
+    if (user.following.includes(req.body.following)) {
       res.status(409).json({
-        error: 'An account with this username already exists.'
+        error: 'You are already following this user.'
       });
       return;
     }
   }
-
+  
   next();
 };
+
+/**
+ * Checks if a user has not yet followed a certain user (cannot unfollow if never followed)
+ */
+ const isUserNotYetFollowingTargetUser = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.session.userId) {
+    const user = await UserCollection.findOneByUserId(req.session.userId);
+    if (!user.following.includes(req.body.following)) {
+      res.status(409).json({
+        error: 'You cannot unfollow a user you have never followed.'
+      });
+      return;
+    }
+  }
+  
+  next();
+};
+
+/**
+ * Checks if user is trying to follow themselves.
+ */
+ const isUserTryingToFollowSelf = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.session.userId) {
+    const user = await UserCollection.findOneByUserId(req.session.userId);
+    if (user.username === req.body.following) {
+      res.status(403).json({
+        error: 'You cannot follow yourself.'
+      });
+      return;
+    }
+  }
+  
+  next();
+};
+
+/**
+ * Checks if the user has already added a certain interest (cannot be added again)
+ */
+ const isUserAlreadyAddedInterest = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.session.userId) {
+    const user = await UserCollection.findOneByUserId(req.session.userId);
+    if (user.interests.includes(req.body.interests)) {
+      res.status(409).json({
+        error: 'You have already added this interest.'
+      });
+      return;
+    }
+  }
+  
+  next();
+};
+
+/**
+ * Checks if the user has not yet added a certain interest (cannot be deleted)
+ */
+ const isUserNotYetAddedInterest = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.session.userId) {
+    const user = await UserCollection.findOneByUserId(req.session.userId);
+    if (!user.interests.includes(req.body.interests)) {
+      res.status(409).json({
+        error: 'You are trying to delete an interest you have not yet added.'
+      });
+      return;
+    }
+  }
+  
+  next();
+};
+
+/**
+ * Checks if the user has any interests
+ */
+ const isUserHasInterests = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.session.userId) {
+    const user = await UserCollection.findOneByUserId(req.session.userId);
+    if (user.interests.length) {
+      next();
+    } else {
+      res.status(404).json({error: 'You do not currently have any interests added.'});
+    }
+  }; 
+ }
 
 /**
  * Checks if the user is logged in, that is, whether the userId is set in session
@@ -144,6 +244,7 @@ const isAuthorExists = async (req: Request, res: Response, next: NextFunction) =
   next();
 };
 
+
 export {
   isCurrentSessionUserExists,
   isUserLoggedIn,
@@ -152,5 +253,11 @@ export {
   isAccountExists,
   isAuthorExists,
   isValidUsername,
-  isValidPassword
+  isValidPassword,
+  isUserNotYetFollowingTargetUser,
+  isUserAlreadyFollowingTargetUser,
+  isUserAlreadyAddedInterest,
+  isUserNotYetAddedInterest,
+  isUserHasInterests,
+  isUserTryingToFollowSelf
 };

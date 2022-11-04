@@ -7,53 +7,37 @@ import {Schema, model} from 'mongoose';
  */
 
 // Type definition for User on the backend
-export type User = {
+export type VSPRequest = {
   _id: Types.ObjectId; // MongoDB assigns each object this ID on creation
   username: string;
-  password: string;
-  dateJoined: Date;
-  VSP: boolean;
-  interests: [String];
-  followers: [String]; // list of follower USERNAMES
-  following: [String]; // list of following USERNAMES
+  dateRequested: Date;
+  content: string;
+  granted: boolean;
 };
 
 // Mongoose schema definition for interfacing with a MongoDB table
 // Users stored in this table will have these fields, with the
 // type given by the type property, inside MongoDB
-const UserSchema = new Schema({
+const VSPRequestSchema = new Schema({
   // The user's username
   username: {
     type: String,
     required: true
   },
-  // The user's password
-  password: {
-    type: String,
-    required: true
-  },
-  // The date the user joined
-  dateJoined: {
+  // The date the user requested VSP status
+  dateRequested: {
     type: Date,
     required: true
   },
-  VSP: {
+  content: {
+    type: String,
+    required: true
+  },
+  granted: {
     type: Boolean,
-    required: true
-  },
-  interests: {
-    type: [String],
-    required: true
-  },
-  followers: {
-    type: [String],
-    required: true
-  },
-  following: {
-    type: [String],
     required: true
   }
 });
 
-const UserModel = model<User>('User', UserSchema);
-export default UserModel;
+const VSPRequestModel = model<VSPRequest>('VSPRequest', VSPRequestSchema);
+export default VSPRequestModel;

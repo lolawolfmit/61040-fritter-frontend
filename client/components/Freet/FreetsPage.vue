@@ -25,9 +25,11 @@
       <header>
         <div class="left">
           <h2>
-            Viewing all freets
+            <span v-if="!$store.state.filter">
+            Freets by users you follow
+            </span>
             <span v-if="$store.state.filter">
-              by @{{ $store.state.filter }}
+              Freets by @{{ $store.state.filter }}
             </span>
           </h2>
         </div>
@@ -35,7 +37,7 @@
           <GetFreetsForm
             ref="getFreetsForm"
             value="author"
-            placeholder="🔍 Filter by author (optional)"
+            placeholder="🔍 Search for a user"
             button="🔄 Get freets"
           />
         </div>

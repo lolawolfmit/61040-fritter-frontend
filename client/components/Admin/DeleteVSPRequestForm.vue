@@ -1,23 +1,23 @@
-<!-- Form for changing username (block style) -->
+<!-- Form for changing password (block style) -->
 
 <script>
 import BlockForm from '@/components/common/BlockForm.vue';
 
 export default {
-  name: 'ChangeUsernameForm',
+  name: 'DeleteVSPRequestForm',
   mixins: [BlockForm],
   data() {
     return {
-      url: '/api/users',
-      method: 'PUT',
+      url: '/api/vsprequest',
+      method: 'DELETE',
       hasBody: true,
-      setUsername: true,
       fields: [
         {id: 'username', label: 'Username', value: ''}
       ],
-      title: 'Change username',
+      title: 'Delete VSP Request',
       callback: () => {
-        const message = 'Successfully changed username!';
+        const message = 'Request successfully deleted!';
+        this.$store.commit('refreshVSPRequests');
         this.$set(this.alerts, message, 'success');
         setTimeout(() => this.$delete(this.alerts, message), 3000);
       }

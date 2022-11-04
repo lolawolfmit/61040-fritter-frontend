@@ -4,11 +4,13 @@ import FreetCollection from './collection';
 import * as userValidator from '../user/middleware';
 import * as freetValidator from '../freet/middleware';
 import * as util from './util';
+import UserCollection from '../user/collection';
+import FreetModel from './model';
 
 const router = express.Router();
 
 /**
- * Get all the freets
+ * Get all the freets.
  *
  * @name GET /api/freets
  *
@@ -23,7 +25,6 @@ const router = express.Router();
  * @return {FreetResponse[]} - An array of freets created by user with username, author
  * @throws {400} - If author is not given
  * @throws {404} - If no user has given author
- *
  */
 router.get(
   '/',
@@ -49,11 +50,47 @@ router.get(
 );
 
 /**
+ * Get the last 20 freets that accounts the author is following have posted.
+ * Returns fewer freets if there are less than 20.
+ * 
+ * @name GET /api/freets/homepage
+ *
+ * @return {FreetResponse[]} - An array of freets from users the user is following
+ * @throws {403} - If user is not logged in
+ */
+ router.get(
+  '/homepage',
+  [
+    userValidator.isUserLoggedIn
+  ],
+  async (req: Request, res: Response) => {
+    const user = await UserCollection.findOneByUserId(req.session.userId as string);
+    const userFollowing = user.following;
+    if (!userFollowing.length) {
+      const response = userFollowing;
+      res.status(200).json(response);
+    }
+    else {
+      let allFreets = await FreetCollection.findAllByUsername(userFollowing[0] as string);
+      for (let i = 1; i < userFollowing.length; i++) {
+        const authorFreets = await FreetCollection.findAllByUsername(userFollowing[i] as string);
+        allFreets = allFreets.concat(authorFreets);
+      }
+      allFreets.sort((a, b) => b.dateModified.getTime() - a.dateModified.getTime());
+      allFreets = allFreets.slice(0, 20);
+      const response = allFreets.map(util.constructFreetResponse);
+      res.status(200).json(response);
+    }
+  }
+);
+
+/**
  * Create a new freet.
  *
  * @name POST /api/freets
  *
  * @param {string} content - The content of the freet
+ * @param {boolean} fact - True if fact, false if opinion
  * @return {FreetResponse} - The created freet
  * @throws {403} - If the user is not logged in
  * @throws {400} - If the freet content is empty or a stream of empty spaces
@@ -67,7 +104,7 @@ router.post(
   ],
   async (req: Request, res: Response) => {
     const userId = (req.session.userId as string) ?? ''; // Will not be an empty string since its validated in isUserLoggedIn
-    const freet = await FreetCollection.addOne(userId, req.body.content);
+    const freet = await FreetCollection.addOne(userId, req.body.content, req.body.fact);
 
     res.status(201).json({
       message: 'Your freet was created successfully.',
@@ -77,7 +114,7 @@ router.post(
 );
 
 /**
- * Delete a freet
+ * Delete a freet.
  *
  * @name DELETE /api/freets/:id
  *
@@ -90,7 +127,7 @@ router.delete(
   '/:freetId?',
   [
     userValidator.isUserLoggedIn,
-    freetValidator.isFreetExists,
+    freetValidator.isFreetIdExists,
     freetValidator.isValidFreetModifier
   ],
   async (req: Request, res: Response) => {
@@ -102,9 +139,9 @@ router.delete(
 );
 
 /**
- * Modify a freet
+ * Modify a freet.
  *
- * @name PATCH /api/freets/:id
+ * @name PUT /api/freets/:id
  *
  * @param {string} content - the new content for the freet
  * @return {FreetResponse} - the updated freet
@@ -114,20 +151,145 @@ router.delete(
  * @throws {400} - If the freet content is empty or a stream of empty spaces
  * @throws {413} - If the freet content is more than 140 characters long
  */
-router.patch(
+router.put(
   '/:freetId?',
   [
     userValidator.isUserLoggedIn,
-    freetValidator.isFreetExists,
+    freetValidator.isFreetIdExists,
     freetValidator.isValidFreetModifier,
     freetValidator.isValidFreetContent
   ],
   async (req: Request, res: Response) => {
+    console.log("hola");
+    console.log(req.params.freetId);
     const freet = await FreetCollection.updateOne(req.params.freetId, req.body.content);
     res.status(200).json({
       message: 'Your freet was updated successfully.',
       freet: util.constructFreetResponse(freet)
     });
+  }
+);
+
+/**
+ * Endorse a freet.
+ * 
+ * @name PATCH /api/freets/endorsements
+ * 
+ * @return {FreetResponse} - the updated freet
+ * @throws {403} - If the user is not logged in
+ * @throws {404} - If the freetId is not valid
+ * @throws {409} - If the user has already endorsed or denounced the freet
+ * @throws {403} - If freet is an opinion
+ * @throws {403} - If user is not a VSP
+ */
+ router.patch(
+  '/endorsements',
+  [
+    userValidator.isUserLoggedIn,
+    freetValidator.isFreetExists,
+    freetValidator.isUserAlreadyEndorsed,
+    freetValidator.isUserAlreadyDenounced,
+    freetValidator.isFreetAFact,
+    freetValidator.isUserVSP
+  ],
+  async (req: Request, res: Response) => {
+    const freet = await FreetCollection.addOneEndorsement(req.body.freetId, req.session.userId);
+      res.status(200).json({
+        message: 'Freet was endorsed successfully.',
+        freet: util.constructFreetResponse(freet)
+      });
+  }
+);
+
+/**
+ * Unendorse a freet.
+ * 
+ * @name PATCH /api/freets/unendorsements
+ * 
+ * @return {FreetResponse} - the updated freet
+ * @throws {403} - if the user is not logged in
+ * @throws {404} - If the freetId is not valid
+ * @throws {409} - If the user has not yet endorsed the freet
+ * @throws {403} - If freet is an opinion
+ * @throws {403} - If user is not a VSP
+ */
+ router.patch(
+  '/unendorsements',
+  [
+    userValidator.isUserLoggedIn,
+    freetValidator.isFreetExists,
+    freetValidator.isUserNotYetEndorsed,
+    freetValidator.isFreetAFact,
+    freetValidator.isUserVSP
+  ],
+  async (req: Request, res: Response) => {
+    console.log(req.body);
+    const freet = await FreetCollection.deleteOneEndorsement(req.body.freetId, req.session.userId);
+      res.status(200).json({
+        message: 'Freet was unendorsed successfully.',
+        freet: util.constructFreetResponse(freet)
+      });
+  }
+);
+
+/**
+ * Denounce a freet.
+ * 
+ * @name PATCH /api/freets/denouncements
+ * 
+ * @return {FreetResponse} - the updated freet
+ * @throws {403} - if the user is not logged in
+ * @throws {404} - If the freetId is not valid
+ * @throws {409} - If the user has already endorsed or denounced the freet
+ * @throws {403} - If freet is an opinion
+ * @throws {403} - If user is not a VSP
+ */
+ router.patch(
+  '/denouncements',
+  [
+    userValidator.isUserLoggedIn,
+    freetValidator.isFreetExists,
+    freetValidator.isUserAlreadyDenounced,
+    freetValidator.isUserAlreadyEndorsed,
+    freetValidator.isFreetAFact,
+    freetValidator.isUserVSP
+  ],
+  async (req: Request, res: Response) => {
+    const freet = await FreetCollection.addOneDenouncement(req.body.freetId, req.session.userId);
+      res.status(200).json({
+        message: 'Freet was denounced successfully.',
+        freet: util.constructFreetResponse(freet)
+      });
+  }
+);
+
+/**
+ * Undenounce a freet.
+ * 
+ * @name PATCH /api/freets/undenouncements
+ * 
+ * @return {FreetResponse} - the updated freet
+ * @throws {403} - if the user is not logged in
+ * @throws {404} - If the freetId is not valid
+ * @throws {409} - If the user has not yet denounced the freet
+ * @throws {403} - If freet is an opinion
+ * @throws {403} - If user is not a VSP
+ */
+ router.patch(
+  '/undenouncements',
+  [
+    userValidator.isUserLoggedIn,
+    freetValidator.isFreetExists,
+    freetValidator.isUserNotYetDenounced,
+    freetValidator.isFreetAFact,
+    freetValidator.isUserVSP
+  ],
+  async (req: Request, res: Response) => {
+    const freet = await FreetCollection.deleteOneDenouncement(req.body.freetId, req.session.userId);
+      res.status(200).json({
+        message: 'Freet was undenounced successfully.',
+        freet: util.constructFreetResponse(freet)
+      });
   }
 );
 

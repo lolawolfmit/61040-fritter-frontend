@@ -20,6 +20,8 @@ export default {
     }).then(res => res.json()).then(res => {
       const user = res.user;
       this.$store.commit('setUsername', user ? user.username : null);
+      this.$store.commit('setVSPStatus', user ? user.VSP : null);
+      this.$store.commit('refreshVSPRequests');
     });
 
     // Clear alerts on page refresh

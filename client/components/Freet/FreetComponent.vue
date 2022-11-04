@@ -6,7 +6,16 @@
     class="freet"
   >
     <header>
-      <h3 class="author">
+      <h3
+        class="author"
+        v-if="$store.state.VSPs.includes(freet.author)"
+      >
+        @{{ freet.author }} 💡
+      </h3>
+      <h3
+        class="author"
+        v-else
+      >
         @{{ freet.author }}
       </h3>
       <div
@@ -122,7 +131,7 @@ export default {
       }
 
       const params = {
-        method: 'PATCH',
+        method: 'PUT',
         message: 'Successfully edited freet!',
         body: JSON.stringify({content: this.draft}),
         callback: () => {

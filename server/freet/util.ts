@@ -9,6 +9,9 @@ type FreetResponse = {
   dateCreated: string;
   content: string;
   dateModified: string;
+  endorsements: Array<string>;
+  denouncements: Array<string>;
+  fact: boolean;
 };
 
 /**
