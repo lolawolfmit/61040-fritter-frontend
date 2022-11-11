@@ -24,6 +24,10 @@ export default {
         this.$store.commit('refreshFollow');
         this.$store.commit('refreshFreets');
         this.$store.commit('refreshVSPStatus');
+        this.$store.commit('updateFilter', null);
+        if (this.$store.state.username === "lola") {
+          this.$store.commit('refreshVSPRequests');
+        }
         this.$router.push({name: 'Home'});
         this.$store.commit('alert', {
           message: 'You are now signed in!', status: 'success'
