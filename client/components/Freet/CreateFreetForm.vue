@@ -15,10 +15,10 @@ export default {
         {id: 'content', label: 'Content', value: ''},
         {id: 'fact', label: 'Fact?', value: ''}
       ],
-      title: 'Create a freet',
+      title: 'Yeet a freet!',
       refreshFreets: true,
       callback: () => {
-        const message = 'Successfully created a freet!';
+        const message = 'Successfully yeeted a freet!';
         this.$set(this.alerts, message, 'success');
         setTimeout(() => this.$delete(this.alerts, message), 3000);
       }

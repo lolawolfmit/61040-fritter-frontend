@@ -117,13 +117,16 @@ export default {
 
 <style scoped>
 form {
-  border: 1px solid #111;
-  padding: 0.5rem;
+  border: 4px solid #FFF2CE;
+  border-radius: 20px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   margin-bottom: 14px;
   position: relative;
+  background-color: #6BBCD1;
+  color: #002947;
 }
 
 article > div {
@@ -132,12 +135,12 @@ article > div {
 }
 
 form > article p {
-  margin: 0;
+  margin: 0px;
 }
 
 form h3,
 form > * {
-  margin: 0.3em 0;
+  margin: 5px;
 }
 
 form h3 {
@@ -147,5 +150,24 @@ form h3 {
 textarea {
    font-family: inherit;
    font-size: inherit;
+   border: 4px solid #6BBCD1;
+   border-radius: 10px;
+}
+
+input {
+  font-family: inherit;
+   font-size: inherit;
+   border: 4px solid #6BBCD1;
+   border-radius: 10px;
+}
+
+button {
+  border: 2px solid #FD9415;
+  border-radius: 10px;
+  padding: 8px;
+  color: aliceblue;
+  background-color: #002947;
+  display: inline-block;
+  margin: 5px;
 }
 </style>

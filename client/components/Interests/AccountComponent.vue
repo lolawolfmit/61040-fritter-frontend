@@ -11,25 +11,26 @@
         v-if="$store.state.VSPs.includes(user.username)"
       >
         @{{ user.username }} 💡
+        <button
+          @click="followUser"
+        >
+          Follow
+        </button>
       </h3>
       <h3
         class="user"
         v-else
       >
         @{{ user.username }}
-      </h3>
-      <div
-        class="actions"
-      >
         <button
           @click="followUser"
         >
           Follow
         </button>
-      </div>
+      </h3>
     </header>
     <p class="info">
-      Joined on {{ user.dateJoined }}
+      Joined on {{ user.dateJoined.toLocaleString('nl-NL') }}
     </p>
     <section class="alerts">
       <article
@@ -96,6 +97,7 @@ export default {
         }
 
         this.$store.commit('refreshAccounts');
+        this.$store.commit('refreshFollow');
 
         params.callback();
       } catch (e) {
@@ -109,8 +111,21 @@ export default {
 
 <style scoped>
 .account {
-    border: 1px solid #111;
+    border: 4px solid #FD9415;
+    border-radius: 20px;
+    background-color: #6BBCD1;
     padding: 20px;
     position: relative;
+    margin: 5px;
+}
+
+button {
+  border: 2px solid #FD9415;
+  border-radius: 10px;
+  padding: 8px;
+  color: aliceblue;
+  background-color: #002947;
+  display: inline-block;
+  margin: 5px;
 }
 </style>

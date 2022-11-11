@@ -12,30 +12,44 @@
           v-if="$store.state.VSPs.includes(freet.author)"
         >
           @{{ freet.author }} 💡
+          <span v-if="freet.author !== $store.state.username">
+            <button
+              v-if="$store.state.following.includes(freet.author)"
+              @click="unfollowUser"
+            >
+              Unfollow
+            </button>
+            <button
+              v-else
+              @click="followUser"
+            >
+              Follow
+            </button>
+          </span>
         </h3>
         <h3
           class="author"
           v-else
         >
           @{{ freet.author }}
+          <span v-if="freet.author !== $store.state.username">
+            <button
+              v-if="$store.state.following.includes(freet.author)"
+              @click="unfollowUser"
+            >
+              Unfollow
+            </button>
+            <button
+              v-else
+              @click="followUser"
+            >
+              Follow
+            </button>
+          </span>
         </h3>
-        <div v-if="freet.author !== $store.state.username">
-          <button
-            v-if="$store.state.following.includes(freet.author)"
-            @click="unfollowUser"
-          >
-            Unfollow
-          </button>
-          <button
-            v-else
-            @click="followUser"
-          >
-            Follow
-          </button>
-        </div>
       </div>
-      <h4 v-if="freet.fact">Fact</h4>
-      <h4 v-if="!freet.fact">Opinion</h4>
+      <h3 v-if="freet.fact" style="color: #002947;">Fact</h3>
+      <h3 v-if="!freet.fact" style="color: #002947;">Opinion</h3>
       <div
         v-if="$store.state.username === freet.author"
         class="actions"
@@ -69,23 +83,23 @@
       :value="draft"
       @input="draft = $event.target.value"
     />
-    <p
+    <h3
       v-else
       class="content"
     >
       {{ freet.content }}
-    </p>
-    <p class="info">
-      Posted at {{ freet.dateModified }}
+    </h3>
+    <p class="info" style="color: #002947;">
+      Posted {{ freet.dateModified }}
       <i v-if="freet.edited">(edited)</i>
     </p>
-    <div v-if="freet.fact">
+    <span v-if="freet.fact" style="color: #002947;">
       <p v-if="freet.endorsements.length > 2">{{freet.endorsements[0]}} and {{freet.endorsements.length - 1}} others endorsed</p>
       <p v-else>{{freet.endorsements.length}} endorsed</p>
       <p v-if="freet.denouncements.length > 2">{{freet.denouncements[0]}} and {{freet.denouncements.length - 1}} others denounced</p>
       <p v-else>{{freet.denouncements.length}} denounced</p>
-    </div>
-    <div v-if="freet.fact">
+    </span>
+    <div v-if="freet.fact && $store.state.isVSP">
       <button @click="endorseFreet" v-if="!freet.endorsements.includes($store.state.username)">
           Endorse
       </button>
@@ -123,7 +137,6 @@ export default {
   },
   data() {
     return {
-      hover: false,
       editing: false, // Whether or not this freet is in edit mode
       draft: this.freet.content, // Potentially-new content for this freet
       alerts: {} // Displays success/error messages encountered during freet modification
@@ -353,6 +366,7 @@ export default {
 
         this.editing = false;
         this.$store.commit('refreshFollow');
+        this.$store.commit('refreshAccounts');
 
         params.callback();
       } catch (e) {
@@ -366,8 +380,28 @@ export default {
 
 <style scoped>
 .freet {
-    border: 1px solid #111;
+    border: 4px solid #FD9415;
+    border-radius: 20px;
+    background-color: #6BBCD1;
     padding: 20px;
     position: relative;
+    margin: 5px;
+}
+
+button {
+  border: 2px solid #FD9415;
+  border-radius: 10px;
+  padding: 8px;
+  color: aliceblue;
+  background-color: #002947;
+  display: inline-block;
+  margin: 5px;
+}
+
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  border: 4px solid #6BBCD1;
+  border-radius: 10px;
 }
 </style>

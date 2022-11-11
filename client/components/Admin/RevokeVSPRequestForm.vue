@@ -18,6 +18,7 @@ export default {
       callback: () => {
         const message = 'VSP status successfully revoked!';
         this.$store.commit('refreshVSPRequests');
+        this.$store.commit('refreshVSPStatus');
         this.$set(this.alerts, message, 'success');
         setTimeout(() => this.$delete(this.alerts, message), 3000);
       }

@@ -59,6 +59,14 @@ nav {
     justify-content: space-between;
     align-items: center;
     position: relative;
+    background-color: #FEB938;
+    color: #002947;
+}
+.router-link-exact-active{
+  padding: 10px;
+  background-color: #E23201;
+  border-radius: 8px;
+  margin:0px;
 }
 
 .title {

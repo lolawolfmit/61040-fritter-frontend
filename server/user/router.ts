@@ -298,7 +298,7 @@ router.delete(
     const allUsers = await UserCollection.findRecommended(userId);
     res.status(200).json({
       message: 'Accounts have been retrieved successfully.',
-      users: allUsers
+      users: allUsers.map(util.constructUserResponse)
     });
   }
 );

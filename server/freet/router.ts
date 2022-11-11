@@ -64,7 +64,6 @@ router.get(
     userValidator.isUserLoggedIn
   ],
   async (req: Request, res: Response) => {
-    console.log("HI");
     const user = await UserCollection.findOneByUserId(req.session.userId as string);
     const userFollowing = user.following;
     if (!userFollowing.length) {
@@ -161,8 +160,6 @@ router.put(
     freetValidator.isValidFreetContent
   ],
   async (req: Request, res: Response) => {
-    console.log("hola");
-    console.log(req.params.freetId);
     const freet = await FreetCollection.updateOne(req.params.freetId, req.body.content);
     res.status(200).json({
       message: 'Your freet was updated successfully.',
@@ -224,7 +221,6 @@ router.put(
     freetValidator.isUserVSP
   ],
   async (req: Request, res: Response) => {
-    console.log(req.body);
     const freet = await FreetCollection.deleteOneEndorsement(req.body.freetId, req.session.userId);
       res.status(200).json({
         message: 'Freet was unendorsed successfully.',

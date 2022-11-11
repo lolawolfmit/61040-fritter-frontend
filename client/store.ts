@@ -45,6 +45,15 @@ const store = new Vuex.Store({
        */
       state.isVSP = status;
     },
+    async refreshVSPStatus(state) {
+      /**
+       * Update VSP status to the specified status.
+       * @param status the new status
+       */
+       const url = 'api/users/session';
+       const res = await fetch(url).then(async r => r.json());
+       state.isVSP = res.user.VSP;
+    },
     async refreshAccounts(state) {
       const url = 'api/users/recommended';
       const res = await fetch(url).then(async r => r.json());
@@ -89,7 +98,7 @@ const store = new Vuex.Store({
       /**
        * Request the server for the currently available freets.
        */
-      const url = state.filter ? `/api/users/${state.filter}/freets` : '/api/freets/homepage';
+      const url = state.filter ? `/api/freets?author=${state.filter}` : '/api/freets/homepage';
       const res = await fetch(url).then(async r => r.json());
       state.freets = res;
 

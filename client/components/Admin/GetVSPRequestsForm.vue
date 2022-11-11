@@ -18,7 +18,6 @@ export default {
         if (!r.ok) {
           throw new Error(res.error);
         }
-        console.log(res.vsprequests);
         this.$store.commit('updateVSPRequests', res.vsprequests);
       } catch (e) {
         this.$set(this.alerts, e, 'error');

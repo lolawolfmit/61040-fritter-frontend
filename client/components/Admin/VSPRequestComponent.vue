@@ -22,8 +22,8 @@
         </button>
       </div>
     </header>
-    <p>{{ vsprequest.content }}</p>
-    <p class="info">
+    <h3>{{ vsprequest.content }}</h3>
+    <p class="info" style="color: #002947;">
       Requested {{ vsprequest.dateRequested }}
     </p>
     <section class="alerts">
@@ -118,9 +118,23 @@ export default {
 </script>
 
 <style scoped>
+
 .vsprequest {
-    border: 1px solid #111;
+    border: 4px solid #FD9415;
+    border-radius: 20px;
+    background-color: #6BBCD1;
     padding: 20px;
     position: relative;
+    margin: 5px;
+}
+
+button {
+  border: 2px solid #FD9415;
+  border-radius: 10px;
+  padding: 8px;
+  color: aliceblue;
+  background-color: #002947;
+  display: inline-block;
+  margin: 5px;
 }
 </style>

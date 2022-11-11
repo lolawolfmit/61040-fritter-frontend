@@ -48,6 +48,9 @@ body {
   padding: 0;
   margin: 0;
   font-size: 1.2em;
+  background-color: #002947;
+  color: aliceblue;
+  font-family: helvetica;
 }
 
 main {
