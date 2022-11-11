@@ -204,7 +204,7 @@ router.put(
  * 
  * @name PATCH /api/users/interests
  * 
- * @param interest - The interest to add to the user's profile
+ * @param interests - The interest to add to the user's profile
  * 
  * @return {UserResponse} - The updated user
  * @throws {403} - If user is not logged in

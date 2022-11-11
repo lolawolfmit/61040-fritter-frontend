@@ -15,7 +15,11 @@ const store = new Vuex.Store({
     alerts: {}, // global success/error messages encountered during submissions to non-visible forms
     vsprequests: [],
     isVSP: null,
-    VSPs: []
+    VSPs: [],
+    interests: [],
+    suggestedAccounts: [],
+    following: [],
+    followers: []
   },
   mutations: {
     alert(state, payload) {
@@ -41,6 +45,32 @@ const store = new Vuex.Store({
        */
       state.isVSP = status;
     },
+    async refreshAccounts(state) {
+      const url = 'api/users/recommended';
+      const res = await fetch(url).then(async r => r.json());
+      state.suggestedAccounts = res.users;
+    },
+    async refreshInterests(state) {
+      const url = 'api/users/session';
+      const res = await fetch(url).then(async r => r.json());
+      state.interests = res.user.interests;
+    },
+    async addInterest(state, interest) {
+      const url = 'api/users/interests';
+      const response = await fetch(url, {
+        method: 'PATCH',
+        body: JSON.stringify(interest)
+      });
+      const url2 = 'api/users/session';
+      const res = await fetch(url2).then(async r => r.json());
+      state.interests = res.user.interests;
+    },
+    async refreshFollow(state) { // refresh both following and followers
+      const url = 'api/users/session';
+      const res = await fetch(url).then(async r => r.json());
+      state.following = res.user.following;
+      state.followers = res.user.followers;
+    },
     updateFilter(state, filter) {
       /**
        * Update the stored freets filter to the specified one.
@@ -59,17 +89,17 @@ const store = new Vuex.Store({
       /**
        * Request the server for the currently available freets.
        */
-      const url = state.filter ? `/api/users/${state.filter}/freets` : '/api/freets';
+      const url = state.filter ? `/api/users/${state.filter}/freets` : '/api/freets/homepage';
       const res = await fetch(url).then(async r => r.json());
       state.freets = res;
 
       const vspurl = 'api/vsprequest/VSPs';
       const vspres = await fetch(vspurl).then(async r => r.json());
       const VSPs = vspres.vspusers;
+      state.VSPs.length = 0;
       for (let user of VSPs) {
         state.VSPs.push(user.username);
       }
-      console.log(state.VSPs);
     },
     updateVSPRequests(state, vsprequests) {
       /**
@@ -77,8 +107,6 @@ const store = new Vuex.Store({
        * @param vsprequests vsprequests to store
        */
       state.vsprequests = vsprequests;
-      console.log(state.vsprequests.length);
-      console.log(state.vsprequests);
     },
     async refreshVSPRequests(state) {
       const url = 'api/vsprequest';

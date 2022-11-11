@@ -6,18 +6,36 @@
     class="freet"
   >
     <header>
-      <h3
-        class="author"
-        v-if="$store.state.VSPs.includes(freet.author)"
-      >
-        @{{ freet.author }} 💡
-      </h3>
-      <h3
-        class="author"
-        v-else
-      >
-        @{{ freet.author }}
-      </h3>
+      <div>
+        <h3
+          class="author"
+          v-if="$store.state.VSPs.includes(freet.author)"
+        >
+          @{{ freet.author }} 💡
+        </h3>
+        <h3
+          class="author"
+          v-else
+        >
+          @{{ freet.author }}
+        </h3>
+        <div v-if="freet.author !== $store.state.username">
+          <button
+            v-if="$store.state.following.includes(freet.author)"
+            @click="unfollowUser"
+          >
+            Unfollow
+          </button>
+          <button
+            v-else
+            @click="followUser"
+          >
+            Follow
+          </button>
+        </div>
+      </div>
+      <h4 v-if="freet.fact">Fact</h4>
+      <h4 v-if="!freet.fact">Opinion</h4>
       <div
         v-if="$store.state.username === freet.author"
         class="actions"
@@ -61,6 +79,26 @@
       Posted at {{ freet.dateModified }}
       <i v-if="freet.edited">(edited)</i>
     </p>
+    <div v-if="freet.fact">
+      <p v-if="freet.endorsements.length > 2">{{freet.endorsements[0]}} and {{freet.endorsements.length - 1}} others endorsed</p>
+      <p v-else>{{freet.endorsements.length}} endorsed</p>
+      <p v-if="freet.denouncements.length > 2">{{freet.denouncements[0]}} and {{freet.denouncements.length - 1}} others denounced</p>
+      <p v-else>{{freet.denouncements.length}} denounced</p>
+    </div>
+    <div v-if="freet.fact">
+      <button @click="endorseFreet" v-if="!freet.endorsements.includes($store.state.username)">
+          Endorse
+      </button>
+      <button @click="unendorseFreet" v-else="freet.endorsements.includes($store.state.username)">
+          Unendorse
+      </button>
+      <button @click="denounceFreet" v-if="!freet.denouncements.includes($store.state.username)">
+          Denounce
+      </button>
+      <button @click="undenounceFreet" v-else="freet.denouncements.includes($store.state.username)">
+          Undenounce
+      </button>
+    </div>
     <section class="alerts">
       <article
         v-for="(status, alert, index) in alerts"
@@ -85,6 +123,7 @@ export default {
   },
   data() {
     return {
+      hover: false,
       editing: false, // Whether or not this freet is in edit mode
       draft: this.freet.content, // Potentially-new content for this freet
       alerts: {} // Displays success/error messages encountered during freet modification
@@ -118,6 +157,96 @@ export default {
         }
       };
       this.request(params);
+    },
+    endorseFreet() {
+      /**
+       * Endorses this freet.
+       */
+      const params = {
+        method: 'PATCH',
+        body: JSON.stringify({freetId: this.freet._id}),
+        callback: () => {
+          this.$store.commit('alert', {
+            message: 'Successfully endorsed freet!', status: 'success'
+          });
+        }
+      };
+      this.requestEndorse(params, "endorsements");
+    },
+    denounceFreet() {
+      /**
+       * Denounces this freet.
+       */
+      const params = {
+        method: 'PATCH',
+        body: JSON.stringify({freetId: this.freet._id}),
+        callback: () => {
+          this.$store.commit('alert', {
+            message: 'Successfully endorsed freet!', status: 'success'
+          });
+        }
+      };
+      this.requestEndorse(params, "denouncements");
+    },
+    unendorseFreet() {
+      /**
+       * Unendorses this freet.
+       */
+      const params = {
+        method: 'PATCH',
+        body: JSON.stringify({freetId: this.freet._id}),
+        callback: () => {
+          this.$store.commit('alert', {
+            message: 'Successfully endorsed freet!', status: 'success'
+          });
+        }
+      };
+      this.requestEndorse(params, "unendorsements");
+    },
+    undenounceFreet() {
+      /**
+       * Undenounces this freet.
+       */
+      const params = {
+        method: 'PATCH',
+        body: JSON.stringify({freetId: this.freet._id}),
+        callback: () => {
+          this.$store.commit('alert', {
+            message: 'Successfully endorsed freet!', status: 'success'
+          });
+        }
+      };
+      this.requestEndorse(params, "undenouncements");
+    },
+    followUser() {
+      /**
+       * Follows this user.
+       */
+      const params = {
+        method: 'PATCH',
+        body: JSON.stringify({following: this.freet.author}),
+        callback: () => {
+          this.$store.commit('alert', {
+            message: 'Successfully followed user!', status: 'success'
+          });
+        }
+      };
+      this.requestFollow(params);
+    },
+    unfollowUser() {
+      /**
+       * Unfollows this user.
+       */
+      const params = {
+        method: 'DELETE',
+        body: JSON.stringify({following: this.freet.author}),
+        callback: () => {
+          this.$store.commit('alert', {
+            message: 'Successfully unfollowed user!', status: 'success'
+          });
+        }
+      };
+      this.requestFollow(params);
     },
     submitEdit() {
       /**
@@ -164,6 +293,66 @@ export default {
 
         this.editing = false;
         this.$store.commit('refreshFreets');
+
+        params.callback();
+      } catch (e) {
+        this.$set(this.alerts, e, 'error');
+        setTimeout(() => this.$delete(this.alerts, e), 3000);
+      }
+    },
+    async requestEndorse(params, route) {
+      /**
+       * Submits a request to the freet's endpoint
+       * @param params - Options for the request
+       * @param params.body - Body for the request, if it exists
+       * @param params.callback - Function to run if the the request succeeds
+       */
+      const options = {
+        method: params.method, headers: {'Content-Type': 'application/json'}
+      };
+      if (params.body) {
+        options.body = params.body;
+      }
+
+      try {
+        const r = await fetch('/api/freets/'+route, options);
+        if (!r.ok) {
+          const res = await r.json();
+          throw new Error(res.error);
+        }
+
+        this.editing = false;
+        this.$store.commit('refreshFreets');
+
+        params.callback();
+      } catch (e) {
+        this.$set(this.alerts, e, 'error');
+        setTimeout(() => this.$delete(this.alerts, e), 3000);
+      }
+    },
+    async requestFollow(params) {
+      /**
+       * Submits a request to the freet's endpoint
+       * @param params - Options for the request
+       * @param params.body - Body for the request, if it exists
+       * @param params.callback - Function to run if the the request succeeds
+       */
+      const options = {
+        method: params.method, headers: {'Content-Type': 'application/json'}
+      };
+      if (params.body) {
+        options.body = params.body;
+      }
+
+      try {
+        const r = await fetch('/api/users/followers', options);
+        if (!r.ok) {
+          const res = await r.json();
+          throw new Error(res.error);
+        }
+
+        this.editing = false;
+        this.$store.commit('refreshFollow');
 
         params.callback();
       } catch (e) {

@@ -64,6 +64,7 @@ router.get(
     userValidator.isUserLoggedIn
   ],
   async (req: Request, res: Response) => {
+    console.log("HI");
     const user = await UserCollection.findOneByUserId(req.session.userId as string);
     const userFollowing = user.following;
     if (!userFollowing.length) {
