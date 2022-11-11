@@ -13,7 +13,7 @@ export default {
       hasBody: true,
       fields: [
         {id: 'content', label: 'Content', value: ''},
-        {id: 'fact', label: 'Fact?', value: ''}
+        {id: 'fact', label: 'Fact? (true/false)', value: ''}
       ],
       title: 'Yeet a freet!',
       refreshFreets: true,

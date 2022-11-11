@@ -19,6 +19,11 @@ export default {
       ],
       title: 'Sign in',
       callback: () => {
+        this.$store.commit('refreshInterests');
+        this.$store.commit('refreshAccounts');
+        this.$store.commit('refreshFollow');
+        this.$store.commit('refreshFreets');
+        this.$store.commit('refreshVSPStatus');
         this.$router.push({name: 'Home'});
         this.$store.commit('alert', {
           message: 'You are now signed in!', status: 'success'

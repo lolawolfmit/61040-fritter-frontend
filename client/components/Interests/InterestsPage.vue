@@ -7,7 +7,7 @@
       <header>
         <h2>What are you interested in, {{$store.state.username}}?</h2>
       </header>
-      <h3 v-if="$store.state.interests.length">Your current interests include: {{$store.state.interests}}</h3>
+      <h3 v-if="$store.state.interests">Your current interests include: {{$store.state.interests}}</h3>
       <h3 v-else>You have no interests.</h3>
     </section>
     <section>
@@ -15,7 +15,7 @@
       <DeleteInterestForm />
     </section>
     <section
-        v-if="$store.state.suggestedAccounts.length"
+        v-if="$store.state.interests && $store.state.suggestedAccounts"
       >
         <h2>Accounts related to your interests:</h2>
         <AccountComponent

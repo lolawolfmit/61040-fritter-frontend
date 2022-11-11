@@ -21,7 +21,7 @@
         </h3>
       </article>
     </section>
-    <section>
+    <section v-if="$store.state.username">
       <header>
         <div class="left">
           <h2>
@@ -43,7 +43,7 @@
         </div>
       </header>
       <section
-        v-if="$store.state.freets.length"
+        v-if="$store.state.freets.length && $store.state.username"
       >
         <FreetComponent
           v-for="freet in $store.state.freets"

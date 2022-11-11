@@ -12,7 +12,7 @@
       <DeleteVSPRequestForm />
     </section>
     <section
-        v-if="$store.state.vsprequests.length"
+        v-if="$store.state.vsprequests"
       >
         <h2>All Ungranted VSP Requests:</h2>
         <VSPRequestComponent

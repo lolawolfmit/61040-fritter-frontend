@@ -55,9 +55,11 @@ const store = new Vuex.Store({
        state.isVSP = res.user.VSP;
     },
     async refreshAccounts(state) {
-      const url = 'api/users/recommended';
-      const res = await fetch(url).then(async r => r.json());
-      state.suggestedAccounts = res.users;
+      if (state.interests) {
+        const url = 'api/users/recommended';
+        const res = await fetch(url).then(async r => r.json());
+        state.suggestedAccounts = res.users;
+      }
     },
     async refreshInterests(state) {
       const url = 'api/users/session';
@@ -102,12 +104,14 @@ const store = new Vuex.Store({
       const res = await fetch(url).then(async r => r.json());
       state.freets = res;
 
-      const vspurl = 'api/vsprequest/VSPs';
-      const vspres = await fetch(vspurl).then(async r => r.json());
-      const VSPs = vspres.vspusers;
-      state.VSPs.length = 0;
-      for (let user of VSPs) {
-        state.VSPs.push(user.username);
+      if (state.username === "lola") {
+        const vspurl = 'api/vsprequest/VSPs';
+        const vspres = await fetch(vspurl).then(async r => r.json());
+        const VSPs = vspres.vspusers;
+        state.VSPs.length = 0;
+        for (let user of VSPs) {
+          state.VSPs.push(user.username);
+        }
       }
     },
     updateVSPRequests(state, vsprequests) {

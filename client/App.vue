@@ -21,12 +21,14 @@ export default {
       const user = res.user;
       this.$store.commit('setUsername', user ? user.username : null);
       this.$store.commit('setVSPStatus', user ? user.VSP : null);
-      this.$store.commit('refreshInterests');
-      this.$store.commit('refreshAccounts');
-      this.$store.commit('refreshFollow');
-      this.$store.commit('refreshFreets');
-      if (user.username === 'lola') {
-        this.$store.commit('refreshVSPRequests');
+      if (user) {
+        this.$store.commit('refreshInterests');
+        this.$store.commit('refreshAccounts');
+        this.$store.commit('refreshFollow');
+        this.$store.commit('refreshFreets');
+        if (user.username === 'lola') {
+          this.$store.commit('refreshVSPRequests');
+        }
       }
     });
 
