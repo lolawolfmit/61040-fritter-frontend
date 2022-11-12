@@ -12,7 +12,7 @@ export default {
       method: 'POST',
       hasBody: true,
       fields: [
-        {id: 'content', label: 'Why do you want to be a VSP?', value: ''}
+        {id: 'content', label: 'VSPs are scientific professionals who can endorse or denounce factual freets. Why do you want to be a VSP?', value: ''}
       ],
       title: 'Request Verified Scientific Professional Status',
       callback: () => {

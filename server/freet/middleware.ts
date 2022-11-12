@@ -154,6 +154,20 @@ const isValidFreetModifier = async (req: Request, res: Response, next: NextFunct
 };
 
 /**
+ * Checks if the boolean is valid
+ */
+ const isValidBoolean = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.body.fact !== "true" && req.body.fact !== "false") {
+    res.status(409).json({
+      error: 'Freet is not a fact or opinion.'
+    });
+    return;
+  }
+
+  next();
+};
+
+/**
  * Checks if the user is a VSP
  */
  const isUserVSP = async (req: Request, res: Response, next: NextFunction) => {
@@ -178,5 +192,6 @@ export {
   isUserNotYetEndorsed,
   isFreetAFact,
   isUserVSP,
-  isFreetIdExists
+  isFreetIdExists,
+  isValidBoolean
 };
